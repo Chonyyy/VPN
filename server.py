@@ -1,7 +1,7 @@
 import socket
 import threading
 import logging
-# usuarios y contraseñas | poner  en una DB si deseas , to esa weba la haces tu 
+# usuarios y contraseñas 
 users = {
     "user1": "password1",
     "user2": "password2",
@@ -13,7 +13,7 @@ user_vlans = {
     "user2": 2,
 }
 
-# Direcciones IP virtuales | lo de  arriba x2
+# Direcciones IP virtuales 
 ip_assignments = {
     "user1": "10.6.1.1",
     "user2": "10.6.2.1",
@@ -45,6 +45,12 @@ def handle_client(client_socket):
         client_socket.send("Autenticación fallida".encode())
     
     client_socket.close()
+     
+#Creacion de un usuario
+def create_user(name, password, vlan_id):
+    users[name] = password
+    user_vlans[name] = vlan_id
+    ip_assignments[name] = "10.6.1.1"
 
 # Autenticacion de usuarios
 def authenticate(username, password):
@@ -58,15 +64,33 @@ def assign_virtual_ip(username):
         return ip_assignments[username]
     return "IP no asignada"
 
+#Verifica si el IP dado pertenece a la subred dada.
+def is_ip_in_subnet(ip, subnet):
+   
+    a = ip.split(".")
+    b = subnet.split(".")
+
+    for i in range(0,3):
+        if b[i] == 'x':
+            return True
+        
+        if a[i] == b[i]:          
+            continue
+        
+        if a[i] != b[i]: 
+            return False
+
 # Restricción de VLANs
 def restrict_vlan(vlan_id, ip_network):
     for user_id, user_vlan in user_vlans.items():
         if user_vlan == vlan_id:
-            ip_assignments[user_id] = "IP bloqueada"
+            if(is_ip_in_subnet(ip_assignments[user_id],ip_network)):
+                ip_assignments[user_id] = "IP bloqueada"
 
 # Restricción de usuarios
 def restrict_user(user_id, ip_network):
-    ip_assignments[user_id] = "IP bloqueada"
+    if(is_ip_in_subnet(ip_assignments[user_id],ip_network)):
+                ip_assignments[user_id] = "IP bloqueada"
 
 # Actualizar el log
 def write_log(log_entry):
@@ -77,3 +101,5 @@ def write_log(log_entry):
 if __name__ == "__main__":
     protocol_type = input("Protocolo de comunicación (tcp/udp): ")
     vpn_server(protocol_type)
+    
+    
