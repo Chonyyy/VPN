@@ -1,10 +1,16 @@
 import socket
 import threading
-
+import logging
 # usuarios y contraseñas | poner  en una DB si deseas , to esa weba la haces tu 
 users = {
     "user1": "password1",
     "user2": "password2",
+}
+
+# VLANs de los usuarios
+user_vlans = {
+    "user1": 1,
+    "user2": 2,
 }
 
 # Direcciones IP virtuales | lo de  arriba x2
@@ -14,17 +20,18 @@ ip_assignments = {
 }
 
 # Servidor VPN
-def vpn_server():
+def vpn_server(protocol_type="tcp"):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('0.0.0.0', 8888))
     server.listen(5)
-    print("Servidor VPN escuchando en el puerto 8888...")
+    print(f"Servidor VPN escuchando en el puerto 8888 (protocolo {protocol_type})...")
 
     while True:
         client, addr = server.accept()
         print(f"Conexión entrante desde {addr}")
-        client_handler = threading.Thread(target=handle_client, args=(client,))
+        client_handler = threading.Thread(target=handle_client, args=(client, ))
         client_handler.start()
+        
 
 # Manejo de clientes
 def handle_client(client_socket):
@@ -51,5 +58,22 @@ def assign_virtual_ip(username):
         return ip_assignments[username]
     return "IP no asignada"
 
+# Restricción de VLANs
+def restrict_vlan(vlan_id, ip_network):
+    for user_id, user_vlan in user_vlans.items():
+        if user_vlan == vlan_id:
+            ip_assignments[user_id] = "IP bloqueada"
+
+# Restricción de usuarios
+def restrict_user(user_id, ip_network):
+    ip_assignments[user_id] = "IP bloqueada"
+
+# Actualizar el log
+def write_log(log_entry):
+    logging.basicConfig(filename='vpn_server.log', format='%(asctime)s %(message)s', level=logging.INFO)
+    logger = logging.getLogger()
+    logger.info(log_entry)
+
 if __name__ == "__main__":
-    vpn_server()
+    protocol_type = input("Protocolo de comunicación (tcp/udp): ")
+    vpn_server(protocol_type)
