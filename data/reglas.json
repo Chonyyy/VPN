@@ -1,0 +1,1 @@
+[{"nombre": "Sherlyn", "tipo": 1, "ip": "33", "puerto": ["puerto_dest"], "e_id": "1"}, {"nombre": "chony", "tipo": 1, "ip": "5000", "puerto": ["puerto_dest"], "e_id": "0"}, {"nombre": "lalala", "tipo": 0, "ip": "127.0.0.1", "puerto": 33, "e_id": 1}, {"nombre": "dudu", "tipo": 0, "ip": "43", "puerto": 3333, "e_id": 15}]
